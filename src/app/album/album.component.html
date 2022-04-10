@@ -1,0 +1,66 @@
+<div *ngIf="album">
+  <div>
+    <h1>{{ album.name }}</h1>
+    <p>Full track listing for {{ album.name }}</p>
+    <p>
+      Click the <mat-icon mat-list-icon>queue_music</mat-icon> to add a song to
+      your favourites list
+    </p>
+    <br />
+  </div>
+  <mat-card>
+    <mat-card-content fxLayout="row wrap" fxLayout.xs="column">
+      <div fxflex>
+        <img
+          [src]="album.images[0].url"
+          alt="album cover"
+          [style.margin]="'10px'"
+          [style.width]="'290px'"
+          [style.height]="'290px'"
+        />
+      </div>
+      <div fxFlex>
+        <div [style.min-width]="'300px'" [style.margin]="'10px'">
+          <strong>Record Label: </strong> {{ album.label }}<br />
+          <strong>Release Date: </strong> {{ album.release_date }}<br /><br />
+          <strong>Tracks:</strong> {{ album.total_tracks }}<br />
+          <strong>Popularity: </strong> {{ album.popularity }}<br /><br />
+
+          <mat-chip-list *ngFor="let artist of album.artists" aria-label="Artist selection">
+            <a [routerLink]="['/artist/' + artist.id]">
+              <mat-chip>{{ artist.name }}</mat-chip>
+            </a>
+          </mat-chip-list>
+          <br />
+          
+          <div *ngFor="let CopyRights of album.copyrights">
+            {{ CopyRights.text }}
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <br /><br />
+
+  <h2>Track Listing</h2>
+  <mat-list>
+    <!-- Single "Responsive" Material List Item-->
+    <mat-list-item role="listitem" *ngFor="let track of album.tracks.items">
+      <mat-icon mat-list-icon (click)="addToFavourites(track.id)"
+        >queue_music</mat-icon
+      >
+      <div mat-line>
+        <mat-card>
+          <mat-card-content>
+            {{ track.track_number }} {{ track.name }}
+            {{ (track.duration_ms / 60000).toFixed(2) }}
+          </mat-card-content>
+          <div *ngIf="track.preview_url">
+            <br /><audio controls [src]="track.preview_url"></audio>
+          </div>
+        </mat-card>
+      </div>
+    </mat-list-item>
+    <!-- -->
+  </mat-list>
+</div>
