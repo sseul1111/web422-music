@@ -21,6 +21,7 @@ export class MusicDataService {
   }
 
   getArtistById(id: string): Observable<SpotifyApi.SingleArtistResponse> {
+    console.log("ADD", id);
     return this.spotifyToken.getBearerToken().pipe(
       mergeMap((token) => {
         return this.http.get<any>(`https://api.spotify.com/v1/artists/${id}`, {
@@ -71,80 +72,45 @@ export class MusicDataService {
     );
   }
 
-  addToFavourites(id: string): Observable<[SpotifyApi.MultipleTracksResponse]> {
+  addToFavourites(id:string): Observable<[String]> {
     // TODO: make a PUT request to environment.userAPIBase/favourites/:id to add id to favourites
-    return this.http.put<[string]>(`${environment.userAPIBase}/favourites/${id}`,id)
-    .pipe(
-      mergeMap((favouritesArray) => {
-        if (favouritesArray.length > 0) {
-          const ids = favouritesArray.join(',');
-          return this.spotifyToken.getBearerToken().pipe(
-            mergeMap((token) => {
-              return this.http.get<any>(
-                `https://api.spotify.com/v1/tracks?ids=${ids}`,
-                {
-                  headers: { Authorization: `Bearer ${token}` },
-                }
-              );
-            })
-          );
-        } else {
-          return new Observable((o) => o.next({ tracks: [] }));
+    console.log("ADD", id);
+    return this.http.put<any>(`${environment.userAPIBase}/favourites/${id}`, id);
+  }
+
+  removeFromFavourites(id:string): Observable<any> {
+    return this.http.delete<[String]>(`${environment.userAPIBase}/favourites/${id}`).pipe(mergeMap(favouritesArray => {
+      // TODO: Perform the same tasks as the original getFavourites() method, only using "favouritesArray" from above, instead of this.favouritesList
+      // NOTE: for the empty array, you will need to use o=>o.next({tracks: []}) instead of o=>{o.next([])}
+
+      if (favouritesArray.length > 0) {
+        const index: number = favouritesArray.indexOf(id);
+
+        if (index != -1) {
+          favouritesArray.splice(index, 1);
         }
-      })
-    );
+
+        return this.getFavourites();
+
+      } else {
+        return new Observable(o=>o.next({tracks: []}));
+      }
+    }));
   }
 
-  removeFromFavourites(id: string): Observable<SpotifyApi.MultipleTracksResponse> {
-    return this.http
-      .delete<[String]>(`${environment.userAPIBase}/favourites/${id}`)
-      .pipe(
-        mergeMap((favouritesArray) => {
-          // TODO: Perform the same tasks as the original getFavourites() method, only using "favouritesArray" from above, instead of this.favouritesList
-          // NOTE: for the empty array, you will need to use o=>o.next({tracks: []}) instead of o=>{o.next([])}
-          if (favouritesArray.length > 0) {
-            const ids = favouritesArray.join(',');
-            return this.spotifyToken.getBearerToken().pipe(
-              mergeMap((token) => {
-                return this.http.get<any>(
-                  `https://api.spotify.com/v1/tracks?ids=${ids}`,
-                  {
-                    headers: { Authorization: `Bearer ${token}` },
-                  }
-                );
-              })
-            );
-          } else {
-            return new Observable((o) => o.next({ tracks: [] }));
-          }
-        })
-      );
-  }
+  getFavourites(): Observable<any> {
+    return this.http.get<[String]>(`${environment.userAPIBase}/favourites/`).pipe(mergeMap(favouritesArray => {
+      // TODO: Perform the same tasks as the original getFavourites() method, only using "favouritesArray" from above, instead of this.favouritesList
+      // NOTE: for the empty array, you will need to use o=>o.next({tracks: []}) instead of o=>{o.next([])}
 
-  getFavourites(): Observable<SpotifyApi.MultipleTracksResponse> {
-    return this.http
-      .get<[String]>(`${environment.userAPIBase}/favourites/`)
-      .pipe(
-        mergeMap((favouritesArray) => {
-          // TODO: Perform the same tasks as the original getFavourites() method, only using "favouritesArray" from above, instead of this.favouritesList
-          // NOTE: for the empty array, you will need to use o=>o.next({tracks: []}) instead of o=>{o.next([])}
-          if (favouritesArray.length > 0) {
-            const ids = favouritesArray.join(',');
-            return this.spotifyToken.getBearerToken().pipe(
-              mergeMap((token) => {
-                return this.http.get<any>(
-                  `https://api.spotify.com/v1/tracks?ids=${ids}`,
-                  {
-                    headers: { Authorization: `Bearer ${token}` },
-                  }
-                );
-              })
-            );
-          } else {
-            return new Observable((o) => o.next({ tracks: [] }));
-          }
-        })
-      );
+      if (favouritesArray.length > 0) {
+        return this.spotifyToken.getBearerToken().pipe(mergeMap(token=>{
+          return this.http.get<any>(`https://api.spotify.com/v1/tracks?ids=${favouritesArray.join()}`, { headers: { "Authorization": `Bearer ${token}` } });
+        }));
+      } else {
+        return new Observable(o=>o.next({tracks: []}));
+      }
+    }));
   }
 
 }

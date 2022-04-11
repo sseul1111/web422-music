@@ -6,6 +6,10 @@
 * 
 *  Name: Nari Park   Student ID: 159906197   Date: 04/09/2022
 *
+*  Angular App (Deployed) Link: https://extraordinary-piroshki-353cb7.netlify.app
+*
+*  User API (Heroku) Link: https://safe-brushlands-00198.herokuapp.com
+*
 ************************************************************************************************/
 import { Component } from '@angular/core';
 import { Router, Event, NavigationStart } from '@angular/router';

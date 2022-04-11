@@ -1,4 +1,4 @@
-import { Component, OnInit, Output } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MusicDataService } from '../music-data.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
@@ -8,8 +8,11 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './album.component.html',
   styleUrls: ['./album.component.css']
 })
-export class AlbumComponent implements OnInit {
+export class AlbumComponent implements OnInit, OnDestroy {
   album: any;
+  sub: any;
+  id: any;
+  //id: string = "";
 
   constructor(
     private dataService: MusicDataService,
@@ -18,20 +21,35 @@ export class AlbumComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // this.album = albumData
-    let id = this.route.snapshot.params['id'];
-    this.dataService.getAlbumById(id).subscribe((data) => (this.album = data));
+    this.id = this.route.snapshot.params['id'];
+
+    this.sub = this.dataService.getAlbumById(this.id).subscribe((data) => {
+      console.log('response from API');
+      console.log(data);
+      this.album = data;
+    });
   }
 
-  addToFavourites(trackID: any) {
-    this.dataService.addToFavourites(trackID).subscribe(
-      (success) => {
-        this.snackBar.open('Adding to Favourites...', 'Done', { duration: 1500 });
+
+  addToFavourites(trackid: any) {
+    this.sub = this.dataService.addToFavourites(trackid).subscribe(
+      (apiResponse) => {
+        if (apiResponse) {
+          this.snackBar.open('Adding to Favourites...', 'Done', {
+            duration: 1500,
+          });
+        }
       },
       (err) => {
-        this.snackBar.open('Unable to add song to Favourites...', 'Done', { duration: 1500 });
+        this.snackBar.open('Unable to add song to Favourites', 'Failed', {
+          duration: 1500,
+        });
       }
     );
+  }
+
+  ngOnDestroy() {
+    this.sub?.unsubscribe();
   }
 
 }
